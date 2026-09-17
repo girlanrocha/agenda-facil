@@ -242,6 +242,8 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLI
 let estabelecimento = "";
 let diaEscolhido = "";
 let horarioEscolhido = "";
+let horarioIdEscolhido = null;
+const estabelecimentoIds = {"Salão Bella":1};
 
 function normalizar(texto){
  return texto.toLowerCase()
@@ -281,6 +283,7 @@ function abrirAgenda(nome){
  estabelecimento=nome;
  diaEscolhido="";
  horarioEscolhido="";
+ horarioIdEscolhido=null;
 
  document.getElementById("nomeEstabelecimento").innerText="📅 Agenda — "+nome;
  document.getElementById("agenda").style.display="block";
@@ -291,24 +294,55 @@ function abrirAgenda(nome){
  document.getElementById("agenda").scrollIntoView({behavior:"smooth"});
 }
 
-function escolherDia(dia){
+async function escolherDia(dia){
  diaEscolhido=dia;
  horarioEscolhido="";
+ horarioIdEscolhido=null;
 
- document.getElementById("tituloHorarios").innerText=
- "Horários disponíveis em "+dia;
-
+ document.getElementById("tituloHorarios").innerText="Horários disponíveis em "+dia;
  document.getElementById("horarios").style.display="block";
  document.getElementById("formAgendamento").style.display="none";
  document.getElementById("sucesso").style.display="none";
 
- document.querySelectorAll(".horario").forEach(x=>x.classList.remove("selecionado"));
+ const grade=document.querySelector(".grade-horarios");
+ const estabelecimentoId=estabelecimentoIds[estabelecimento];
+
+ if(!estabelecimentoId){
+   grade.innerHTML="<p>Este estabelecimento ainda não está conectado ao banco de dados.</p>";
+   document.getElementById("horarios").scrollIntoView({behavior:"smooth"});
+   return;
+ }
+
+ const partes=dia.split("/");
+ const dataBanco=partes[2]+"-"+partes[1]+"-"+partes[0];
+ grade.innerHTML="<p>Carregando horários...</p>";
+
+ const {data,error}=await supabaseClient
+   .from("horarios")
+   .select("id,hora")
+   .eq("estabelecimento_id",estabelecimentoId)
+   .eq("data",dataBanco)
+   .eq("disponivel",true)
+   .order("hora",{ascending:true});
+
+ if(error){
+   console.error(error);
+   grade.innerHTML="<p>Não foi possível carregar os horários.</p>";
+ }else if(!data || data.length===0){
+   grade.innerHTML="<p>Nenhum horário disponível para este dia.</p>";
+ }else{
+   grade.innerHTML=data.map(h=>{
+     const hora=String(h.hora).slice(0,5);
+     return `<button class="horario" onclick="escolherHorario('${hora}',this,${h.id})">${hora}</button>`;
+   }).join("");
+ }
 
  document.getElementById("horarios").scrollIntoView({behavior:"smooth"});
 }
 
-function escolherHorario(horario,botao){
+function escolherHorario(horario,botao,horarioId){
  horarioEscolhido=horario;
+ horarioIdEscolhido=horarioId;
 
  document.querySelectorAll(".horario").forEach(x=>x.classList.remove("selecionado"));
  botao.classList.add("selecionado");
