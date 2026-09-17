@@ -206,12 +206,26 @@ Nenhum estabelecimento encontrado nessa categoria.
 <button class="fechar" onclick="fecharLogin()">×</button>
 <h2>🔐 Área do Comerciante</h2>
 <p style="margin-bottom:15px">Acesso reservado aos estabelecimentos cadastrados.</p>
-<input type="text" placeholder="Usuário">
-<input type="password" placeholder="Senha">
-<button class="btn-confirmar" onclick="loginDemo()">Entrar</button>
-<p style="font-size:12px;color:#777;margin-top:12px">Login ainda em modo de demonstração.</p>
+<input id="emailComerciante" type="email" placeholder="E-mail">
+<input id="senhaComerciante" type="password" placeholder="Senha">
+<button class="btn-confirmar" onclick="loginComerciante()">Entrar</button>
+<p id="erroLogin" style="font-size:13px;color:#c52d2d;margin-top:12px"></p>
 </div>
 </div>
+
+
+<section class="painel" id="painelComerciante" style="max-width:1100px;margin:28px auto;padding:22px">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+    <div>
+      <h2>🏪 Painel do Comerciante</h2>
+      <p id="comercianteInfo" style="margin-top:6px"></p>
+    </div>
+    <button class="btn-comerciante" style="border:1px solid #126b5b" onclick="sairComerciante()">Sair</button>
+  </div>
+  <hr style="margin:20px 0;border:0;border-top:1px solid #ddd">
+  <h3>Agendamentos do estabelecimento</h3>
+  <div id="listaAgendamentos" style="margin-top:15px">Carregando...</div>
+</section>
 
 <footer>
 <strong>Agenda Fácil</strong><br>
@@ -219,7 +233,12 @@ Encontre. Agende. Pronto.<br><br>
 © 2026 Agenda Fácil
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPABASE_URL = "https://jekcdpnoohkxdecwnhzb.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Eq8rdd3LUZDGyG8it7xTOw_Sl9B1O9c";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
 let estabelecimento = "";
 let diaEscolhido = "";
 let horarioEscolhido = "";
@@ -330,9 +349,98 @@ function fecharLogin(){
  document.getElementById("modalLogin").style.display="none";
 }
 
-function loginDemo(){
- alert("Na próxima etapa criaremos o login real e o painel do comerciante.");
+async function loginComerciante(){
+ const email=document.getElementById("emailComerciante").value.trim();
+ const senha=document.getElementById("senhaComerciante").value;
+ const erro=document.getElementById("erroLogin");
+ erro.textContent="";
+
+ if(!email || !senha){
+   erro.textContent="Informe o e-mail e a senha.";
+   return;
+ }
+
+ const {data,error}=await supabaseClient.auth.signInWithPassword({
+   email:email,
+   password:senha
+ });
+
+ if(error){
+   erro.textContent="Não foi possível entrar. Confira e-mail e senha.";
+   return;
+ }
+
+ await carregarPainelComerciante(data.user);
 }
+
+async function carregarPainelComerciante(user){
+ const {data:comerciante,error}=await supabaseClient
+   .from("comerciantes")
+   .select("nome, estabelecimento_id")
+   .eq("user_id",user.id)
+   .single();
+
+ if(error || !comerciante){
+   await supabaseClient.auth.signOut();
+   document.getElementById("erroLogin").textContent=
+     "Este usuário não está vinculado a um estabelecimento.";
+   return;
+ }
+
+ const {data:estab}=await supabaseClient
+   .from("estabelecimentos")
+   .select("id,nome")
+   .eq("id",comerciante.estabelecimento_id)
+   .single();
+
+ fecharLogin();
+ document.getElementById("painelComerciante").style.display="block";
+ document.getElementById("comercianteInfo").textContent=
+   comerciante.nome+" — "+(estab?.nome || "Estabelecimento");
+ document.getElementById("painelComerciante").scrollIntoView({behavior:"smooth"});
+
+ await carregarAgendamentos(comerciante.estabelecimento_id);
+}
+
+async function carregarAgendamentos(estabelecimentoId){
+ const area=document.getElementById("listaAgendamentos");
+
+ const {data,error}=await supabaseClient
+   .from("agendamentos")
+   .select("*")
+   .eq("estabelecimento_id",estabelecimentoId);
+
+ if(error){
+   area.innerHTML="<p>Não foi possível carregar os agendamentos. Precisamos conferir as colunas/políticas da tabela agendamentos.</p>";
+   return;
+ }
+
+ if(!data || data.length===0){
+   area.innerHTML="<p>Nenhum agendamento encontrado.</p>";
+   return;
+ }
+
+ area.innerHTML=data.map(a=>{
+   const cliente=a.nome_cliente ?? a.nome ?? a.cliente_nome ?? "Cliente";
+   const telefone=a.telefone ?? a.telefone_cliente ?? "";
+   const dataAgenda=a.data ?? a.dia ?? a.data_agendamento ?? "";
+   const horario=a.horario ?? a.hora ?? "";
+   return `<div style="padding:13px;border:1px solid #ddd;border-radius:9px;margin-bottom:10px">
+     <strong>${cliente}</strong><br>
+     ${telefone ? "📱 "+telefone+"<br>" : ""}
+     ${dataAgenda ? "📅 "+dataAgenda+" " : ""}${horario ? "às "+horario : ""}
+   </div>`;
+ }).join("");
+}
+
+async function sairComerciante(){
+ await supabaseClient.auth.signOut();
+ document.getElementById("painelComerciante").style.display="none";
+}
+
+supabaseClient.auth.getSession().then(({data})=>{
+ if(data.session?.user) carregarPainelComerciante(data.session.user);
+});
 
 window.onclick=function(event){
  const modal=document.getElementById("modalLogin");
