@@ -1,426 +1,343 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agenda Fácil</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda Fácil</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f5f7fa;color:#222}
+header,.hero{background:#126b5b;color:white}
+header{padding:22px 16px}
+.topo{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px}
+.logo h1{font-size:27px}
+.logo p{font-size:13px;margin-top:4px}
+button{cursor:pointer}
+.btn-comerciante{background:white;color:#126b5b;border:0;padding:12px 16px;border-radius:9px;font-weight:bold}
+.hero{text-align:center;padding:25px 16px 45px}
+.hero h2{font-size:28px;margin-bottom:8px}
+.hero p{margin-bottom:20px}
+.busca{max-width:650px;margin:auto}
+.busca input{width:100%;border:0;padding:16px;border-radius:10px;font-size:16px;outline:none}
+main{max-width:1100px;margin:auto;padding:25px 16px}
+.titulo{margin-bottom:15px;font-size:21px}
 
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f7fa;
-      color: #222;
-    }
+.categorias{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:30px}
+.categoria{background:white;border:2px solid transparent;padding:18px 8px;border-radius:12px;text-align:center;box-shadow:0 2px 8px #00000012;cursor:pointer}
+.categoria:hover,.categoria.ativa{border-color:#126b5b;background:#eef9f6}
+.icone{font-size:30px;display:block;margin-bottom:7px}
 
-    header {
-      background: #126b5b;
-      color: white;
-      padding: 22px 16px;
-    }
+.publicidade{background:#fff4ce;border:2px dashed #e4b83d;border-radius:12px;padding:22px;text-align:center;margin:25px 0 30px}
+.publicidade small{display:block;color:#777;margin-bottom:7px}
 
-    .topo {
-      max-width: 1100px;
-      margin: auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
-    }
+.estabelecimentos{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:white;border-radius:14px;padding:20px;box-shadow:0 2px 10px #00000012}
+.card h3{margin-bottom:8px}
+.tipo{color:#666;margin-bottom:12px}
+.status{display:flex;gap:12px;margin:15px 0;font-size:14px}
+.verde{color:#168447;font-weight:bold}
+.vermelho{color:#c52d2d;font-weight:bold}
+.btn-agenda,.btn-confirmar{width:100%;border:0;background:#126b5b;color:white;padding:13px;border-radius:8px;font-weight:bold}
 
-    .logo h1 {
-      font-size: 27px;
-    }
+.painel{display:none;background:white;margin-top:28px;padding:22px;border-radius:14px;box-shadow:0 2px 10px #00000012}
+.legenda{margin:12px 0 20px}
+.dias{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.dia{padding:15px 5px;border:0;border-radius:8px;text-align:center;font-weight:bold}
+.aberto{background:#d9f6e4;color:#14783e;cursor:pointer}
+.aberto:hover{background:#bceccc}
+.fechado{background:#ffdede;color:#a92828;cursor:not-allowed}
 
-    .logo p {
-      font-size: 13px;
-      opacity: .9;
-      margin-top: 4px;
-    }
+#horarios{display:none;margin-top:25px}
+.grade-horarios{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.horario{background:#eef9f6;color:#126b5b;border:1px solid #126b5b;padding:11px 17px;border-radius:8px;font-weight:bold}
+.horario:hover,.horario.selecionado{background:#126b5b;color:white}
 
-    .btn-comerciante {
-      background: white;
-      color: #126b5b;
-      border: none;
-      padding: 11px 15px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+#formAgendamento{display:none;margin-top:25px;padding-top:20px;border-top:1px solid #ddd}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}
+.form-grid input{width:100%;padding:13px;border:1px solid #ccc;border-radius:8px;font-size:16px}
+.resumo{background:#eef9f6;padding:13px;border-radius:8px;margin:15px 0}
+.sucesso{display:none;background:#d9f6e4;color:#126b5b;padding:18px;border-radius:10px;margin-top:20px;font-weight:bold;text-align:center}
+.sem-resultado{display:none;background:white;padding:25px;text-align:center;border-radius:12px}
 
-    .hero {
-      background: #126b5b;
-      color: white;
-      padding: 25px 16px 45px;
-      text-align: center;
-    }
+.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:20px;z-index:20}
+.modal-box{background:white;width:100%;max-width:400px;border-radius:14px;padding:25px}
+.modal-box h2{margin-bottom:15px}
+.modal-box input{width:100%;padding:13px;margin-bottom:10px;border:1px solid #ccc;border-radius:8px}
+.fechar{float:right;border:0;background:none;font-size:22px}
 
-    .hero h2 {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
+footer{margin-top:40px;background:#20252b;color:white;padding:25px;text-align:center;font-size:14px}
 
-    .hero p {
-      margin-bottom: 20px;
-    }
-
-    .busca {
-      max-width: 650px;
-      margin: auto;
-    }
-
-    .busca input {
-      width: 100%;
-      border: none;
-      padding: 16px;
-      border-radius: 10px;
-      font-size: 16px;
-      outline: none;
-    }
-
-    main {
-      max-width: 1100px;
-      margin: auto;
-      padding: 25px 16px;
-    }
-
-    .titulo {
-      margin-bottom: 15px;
-      font-size: 21px;
-    }
-
-    .categorias {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 12px;
-      margin-bottom: 30px;
-    }
-
-    .categoria {
-      background: white;
-      padding: 18px 8px;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 2px 8px #00000012;
-      cursor: pointer;
-      transition: .2s;
-    }
-
-    .categoria:hover {
-      transform: translateY(-3px);
-    }
-
-    .icone {
-      font-size: 30px;
-      display: block;
-      margin-bottom: 7px;
-    }
-
-    .publicidade {
-      background: #fff4ce;
-      border: 2px dashed #e4b83d;
-      border-radius: 12px;
-      padding: 22px;
-      text-align: center;
-      margin: 25px 0 30px;
-    }
-
-    .publicidade small {
-      display: block;
-      margin-bottom: 7px;
-      color: #777;
-    }
-
-    .estabelecimentos {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 14px;
-      padding: 20px;
-      box-shadow: 0 2px 10px #00000012;
-    }
-
-    .card h3 {
-      margin-bottom: 8px;
-    }
-
-    .tipo {
-      color: #666;
-      margin-bottom: 12px;
-    }
-
-    .status {
-      display: flex;
-      gap: 10px;
-      margin: 15px 0;
-      font-size: 14px;
-    }
-
-    .verde {
-      color: #168447;
-      font-weight: bold;
-    }
-
-    .vermelho {
-      color: #c52d2d;
-      font-weight: bold;
-    }
-
-    .btn-agenda {
-      width: 100%;
-      border: none;
-      background: #126b5b;
-      color: white;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .agenda-demo {
-      display: none;
-      background: white;
-      margin-top: 25px;
-      padding: 22px;
-      border-radius: 14px;
-      box-shadow: 0 2px 10px #00000012;
-    }
-
-    .legenda {
-      margin: 12px 0 20px;
-    }
-
-    .dias {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
-    }
-
-    .dia {
-      padding: 15px 5px;
-      border-radius: 8px;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    .aberto {
-      background: #d9f6e4;
-      color: #14783e;
-      cursor: pointer;
-    }
-
-    .fechado {
-      background: #ffdede;
-      color: #a92828;
-    }
-
-    footer {
-      margin-top: 40px;
-      background: #20252b;
-      color: white;
-      padding: 25px;
-      text-align: center;
-      font-size: 14px;
-    }
-
-    @media (max-width: 800px) {
-      .categorias {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .estabelecimentos {
-        grid-template-columns: 1fr;
-      }
-
-      .dias {
-        grid-template-columns: repeat(4, 1fr);
-      }
-
-      .hero h2 {
-        font-size: 23px;
-      }
-    }
-  </style>
+@media(max-width:800px){
+ .categorias{grid-template-columns:repeat(3,1fr)}
+ .estabelecimentos{grid-template-columns:1fr}
+ .dias{grid-template-columns:repeat(4,1fr)}
+ .form-grid{grid-template-columns:1fr}
+ .hero h2{font-size:23px}
+ .topo{align-items:flex-start}
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <div class="topo">
-    <div class="logo">
-      <h1>📅 Agenda Fácil</h1>
-      <p>Seu portal de agendamentos</p>
-    </div>
-
-    <button class="btn-comerciante">
-      🔐 Área do Comerciante
-    </button>
-  </div>
+<div class="topo">
+ <div class="logo">
+   <h1>📅 Agenda Fácil</h1>
+   <p>Seu portal de agendamentos</p>
+ </div>
+ <button class="btn-comerciante" onclick="abrirLogin()">🔐 Área do Comerciante</button>
+</div>
 </header>
 
 <section class="hero">
-  <h2>Encontre um serviço e agende seu horário</h2>
-  <p>Rápido, simples e sem precisar ligar.</p>
-
-  <div class="busca">
-    <input
-      type="text"
-      id="pesquisa"
-      placeholder="🔎 Pesquise cabeleireiro, dentista, manicure..."
-    >
-  </div>
+<h2>Encontre um serviço e agende seu horário</h2>
+<p>Rápido, simples e sem precisar ligar.</p>
+<div class="busca">
+<input id="pesquisa" type="text" placeholder="🔎 Pesquise cabeleireiro, dentista, manicure..." oninput="pesquisar()">
+</div>
 </section>
 
 <main>
 
-  <h2 class="titulo">O que você procura?</h2>
+<h2 class="titulo">O que você procura?</h2>
 
-  <div class="categorias">
+<div class="categorias">
+ <div class="categoria" onclick="filtrar('manicure',this)"><span class="icone">💅</span>Manicure</div>
+ <div class="categoria" onclick="filtrar('cabeleireiro',this)"><span class="icone">💇</span>Cabeleireiro</div>
+ <div class="categoria" onclick="filtrar('dentista',this)"><span class="icone">🦷</span>Dentista</div>
+ <div class="categoria" onclick="filtrar('clinica',this)"><span class="icone">🏥</span>Clínica</div>
+ <div class="categoria" onclick="filtrar('massagem',this)"><span class="icone">💆</span>Massagem</div>
+ <div class="categoria" onclick="filtrar('podologia',this)"><span class="icone">🦶</span>Podólogo</div>
+</div>
 
-    <div class="categoria">
-      <span class="icone">💅</span>
-      Manicure
-    </div>
+<div class="publicidade">
+<small>PUBLICIDADE</small>
+<h3>📢 Divulgue sua empresa aqui</h3>
+<p>Espaço reservado para empresas e parceiros locais.</p>
+</div>
 
-    <div class="categoria">
-      <span class="icone">💇</span>
-      Cabeleireiro
-    </div>
+<h2 class="titulo" id="tituloLista">Estabelecimentos</h2>
 
-    <div class="categoria">
-      <span class="icone">🦷</span>
-      Dentista
-    </div>
+<div class="estabelecimentos" id="lista">
 
-    <div class="categoria">
-      <span class="icone">🏥</span>
-      Clínica
-    </div>
+<div class="card" data-tags="salao bella cabeleireiro manicure">
+<h3>Salão Bella</h3>
+<div class="tipo">💇 Cabeleireiro • 💅 Manicure</div>
+<p>Consulte os dias e horários disponíveis.</p>
+<div class="status"><span class="verde">● Disponível</span><span class="vermelho">● Fechado</span></div>
+<button class="btn-agenda" onclick="abrirAgenda('Salão Bella')">Ver agenda</button>
+</div>
 
-    <div class="categoria">
-      <span class="icone">💆</span>
-      Massagem
-    </div>
+<div class="card" data-tags="clinica sorriso dentista clinica">
+<h3>Clínica Sorriso</h3>
+<div class="tipo">🦷 Dentista</div>
+<p>Consulte os dias e horários disponíveis.</p>
+<div class="status"><span class="verde">● Disponível</span><span class="vermelho">● Fechado</span></div>
+<button class="btn-agenda" onclick="abrirAgenda('Clínica Sorriso')">Ver agenda</button>
+</div>
 
-    <div class="categoria">
-      <span class="icone">🦶</span>
-      Podólogo
-    </div>
+<div class="card" data-tags="espaco bem estar massagem podologia podologo">
+<h3>Espaço Bem-Estar</h3>
+<div class="tipo">💆 Massagem • 🦶 Podologia</div>
+<p>Consulte os dias e horários disponíveis.</p>
+<div class="status"><span class="verde">● Disponível</span><span class="vermelho">● Fechado</span></div>
+<button class="btn-agenda" onclick="abrirAgenda('Espaço Bem-Estar')">Ver agenda</button>
+</div>
 
-  </div>
+</div>
 
-  <div class="publicidade">
-    <small>PUBLICIDADE</small>
-    <h3>📢 Divulgue sua empresa aqui</h3>
-    <p>Espaço reservado para empresas e parceiros locais.</p>
-  </div>
+<div class="sem-resultado" id="semResultado">
+Nenhum estabelecimento encontrado nessa categoria.
+</div>
 
-  <h2 class="titulo">Estabelecimentos</h2>
+<section class="painel" id="agenda">
+<h2 id="nomeEstabelecimento">Agenda</h2>
+<div class="legenda">🟢 Disponível &nbsp;&nbsp; 🔴 Sem horários disponíveis</div>
 
-  <div class="estabelecimentos">
+<h3>Setembro de 2026</h3><br>
 
-    <div class="card">
-      <h3>Salão Bella</h3>
-      <div class="tipo">💇 Cabeleireiro • 💅 Manicure</div>
+<div class="dias">
+<button class="dia aberto" onclick="escolherDia('17/09/2026')">17<br>QUI</button>
+<button class="dia aberto" onclick="escolherDia('18/09/2026')">18<br>SEX</button>
+<button class="dia fechado">19<br>SÁB</button>
+<button class="dia fechado">20<br>DOM</button>
+<button class="dia aberto" onclick="escolherDia('21/09/2026')">21<br>SEG</button>
+<button class="dia aberto" onclick="escolherDia('22/09/2026')">22<br>TER</button>
+<button class="dia fechado">23<br>QUA</button>
+</div>
 
-      <p>Consulte os dias e horários disponíveis.</p>
+<div id="horarios">
+<h3 id="tituloHorarios">Horários disponíveis</h3>
+<div class="grade-horarios">
+<button class="horario" onclick="escolherHorario('08:00',this)">08:00</button>
+<button class="horario" onclick="escolherHorario('09:00',this)">09:00</button>
+<button class="horario" onclick="escolherHorario('10:30',this)">10:30</button>
+<button class="horario" onclick="escolherHorario('13:00',this)">13:00</button>
+<button class="horario" onclick="escolherHorario('14:30',this)">14:30</button>
+<button class="horario" onclick="escolherHorario('16:00',this)">16:00</button>
+</div>
+</div>
 
-      <div class="status">
-        <span class="verde">● Disponível</span>
-        <span class="vermelho">● Fechado</span>
-      </div>
+<div id="formAgendamento">
+<h3>Seus dados</h3>
 
-      <button class="btn-agenda" onclick="abrirAgenda('Salão Bella')">
-        Ver agenda
-      </button>
-    </div>
+<div class="form-grid">
+<input id="nomeCliente" type="text" placeholder="Nome completo">
+<input id="telefoneCliente" type="tel" placeholder="Telefone / WhatsApp">
+</div>
 
-    <div class="card">
-      <h3>Clínica Sorriso</h3>
-      <div class="tipo">🦷 Dentista</div>
+<div class="resumo" id="resumo"></div>
 
-      <p>Consulte os dias e horários disponíveis.</p>
+<button class="btn-confirmar" onclick="confirmarAgendamento()">
+✓ Confirmar agendamento
+</button>
+</div>
 
-      <div class="status">
-        <span class="verde">● Disponível</span>
-        <span class="vermelho">● Fechado</span>
-      </div>
+<div class="sucesso" id="sucesso"></div>
 
-      <button class="btn-agenda" onclick="abrirAgenda('Clínica Sorriso')">
-        Ver agenda
-      </button>
-    </div>
-
-    <div class="card">
-      <h3>Espaço Bem-Estar</h3>
-      <div class="tipo">💆 Massagem • 🦶 Podologia</div>
-
-      <p>Consulte os dias e horários disponíveis.</p>
-
-      <div class="status">
-        <span class="verde">● Disponível</span>
-        <span class="vermelho">● Fechado</span>
-      </div>
-
-      <button class="btn-agenda" onclick="abrirAgenda('Espaço Bem-Estar')">
-        Ver agenda
-      </button>
-    </div>
-
-  </div>
-
-  <section class="agenda-demo" id="agenda">
-
-    <h2 id="nomeEstabelecimento">Agenda</h2>
-
-    <div class="legenda">
-      🟢 Verde = possui horário disponível &nbsp;&nbsp;
-      🔴 Vermelho = indisponível
-    </div>
-
-    <h3>Setembro de 2026</h3>
-    <br>
-
-    <div class="dias">
-      <div class="dia aberto">17<br>QUI</div>
-      <div class="dia aberto">18<br>SEX</div>
-      <div class="dia fechado">19<br>SÁB</div>
-      <div class="dia fechado">20<br>DOM</div>
-      <div class="dia aberto">21<br>SEG</div>
-      <div class="dia aberto">22<br>TER</div>
-      <div class="dia fechado">23<br>QUA</div>
-    </div>
-
-  </section>
+</section>
 
 </main>
 
+<div class="modal" id="modalLogin">
+<div class="modal-box">
+<button class="fechar" onclick="fecharLogin()">×</button>
+<h2>🔐 Área do Comerciante</h2>
+<p style="margin-bottom:15px">Acesso reservado aos estabelecimentos cadastrados.</p>
+<input type="text" placeholder="Usuário">
+<input type="password" placeholder="Senha">
+<button class="btn-confirmar" onclick="loginDemo()">Entrar</button>
+<p style="font-size:12px;color:#777;margin-top:12px">Login ainda em modo de demonstração.</p>
+</div>
+</div>
+
 <footer>
-  <strong>Agenda Fácil</strong><br>
-  Encontre. Agende. Pronto.<br><br>
-  © 2026 Agenda Fácil
+<strong>Agenda Fácil</strong><br>
+Encontre. Agende. Pronto.<br><br>
+© 2026 Agenda Fácil
 </footer>
 
 <script>
-  function abrirAgenda(nome) {
-    document.getElementById("nomeEstabelecimento").innerText =
-      "📅 Agenda — " + nome;
+let estabelecimento = "";
+let diaEscolhido = "";
+let horarioEscolhido = "";
 
-    document.getElementById("agenda").style.display = "block";
+function normalizar(texto){
+ return texto.toLowerCase()
+ .normalize("NFD")
+ .replace(/[\u0300-\u036f]/g,"");
+}
 
-    document.getElementById("agenda").scrollIntoView({
-      behavior: "smooth"
-    });
-  }
+function filtrar(categoria,elemento){
+ document.querySelectorAll(".categoria").forEach(x=>x.classList.remove("ativa"));
+ elemento.classList.add("ativa");
+
+ document.getElementById("pesquisa").value="";
+ aplicarFiltro(categoria);
+}
+
+function aplicarFiltro(termo){
+ termo=normalizar(termo);
+ let encontrados=0;
+
+ document.querySelectorAll(".card").forEach(card=>{
+   const tags=normalizar(card.dataset.tags);
+   const mostrar=tags.includes(termo);
+   card.style.display=mostrar?"block":"none";
+   if(mostrar) encontrados++;
+ });
+
+ document.getElementById("semResultado").style.display=encontrados?"none":"block";
+ document.getElementById("agenda").style.display="none";
+}
+
+function pesquisar(){
+ document.querySelectorAll(".categoria").forEach(x=>x.classList.remove("ativa"));
+ aplicarFiltro(document.getElementById("pesquisa").value);
+}
+
+function abrirAgenda(nome){
+ estabelecimento=nome;
+ diaEscolhido="";
+ horarioEscolhido="";
+
+ document.getElementById("nomeEstabelecimento").innerText="📅 Agenda — "+nome;
+ document.getElementById("agenda").style.display="block";
+ document.getElementById("horarios").style.display="none";
+ document.getElementById("formAgendamento").style.display="none";
+ document.getElementById("sucesso").style.display="none";
+
+ document.getElementById("agenda").scrollIntoView({behavior:"smooth"});
+}
+
+function escolherDia(dia){
+ diaEscolhido=dia;
+ horarioEscolhido="";
+
+ document.getElementById("tituloHorarios").innerText=
+ "Horários disponíveis em "+dia;
+
+ document.getElementById("horarios").style.display="block";
+ document.getElementById("formAgendamento").style.display="none";
+ document.getElementById("sucesso").style.display="none";
+
+ document.querySelectorAll(".horario").forEach(x=>x.classList.remove("selecionado"));
+
+ document.getElementById("horarios").scrollIntoView({behavior:"smooth"});
+}
+
+function escolherHorario(horario,botao){
+ horarioEscolhido=horario;
+
+ document.querySelectorAll(".horario").forEach(x=>x.classList.remove("selecionado"));
+ botao.classList.add("selecionado");
+
+ document.getElementById("resumo").innerHTML=
+ "<strong>"+estabelecimento+"</strong><br>"+
+ "📅 "+diaEscolhido+" às "+horarioEscolhido;
+
+ document.getElementById("formAgendamento").style.display="block";
+ document.getElementById("formAgendamento").scrollIntoView({behavior:"smooth"});
+}
+
+function confirmarAgendamento(){
+ const nome=document.getElementById("nomeCliente").value.trim();
+ const telefone=document.getElementById("telefoneCliente").value.trim();
+
+ if(!nome || !telefone){
+   alert("Informe seu nome e telefone.");
+   return;
+ }
+
+ document.getElementById("sucesso").innerHTML=
+ "✅ Agendamento realizado com sucesso!<br><br>"+
+ nome+"<br>"+
+ estabelecimento+"<br>"+
+ "📅 "+diaEscolhido+" às "+horarioEscolhido;
+
+ document.getElementById("sucesso").style.display="block";
+ document.getElementById("formAgendamento").style.display="none";
+ document.getElementById("sucesso").scrollIntoView({behavior:"smooth"});
+}
+
+function abrirLogin(){
+ document.getElementById("modalLogin").style.display="flex";
+}
+
+function fecharLogin(){
+ document.getElementById("modalLogin").style.display="none";
+}
+
+function loginDemo(){
+ alert("Na próxima etapa criaremos o login real e o painel do comerciante.");
+}
+
+window.onclick=function(event){
+ const modal=document.getElementById("modalLogin");
+ if(event.target===modal) fecharLogin();
+}
 </script>
 
 </body>
