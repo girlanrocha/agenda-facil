@@ -355,12 +355,39 @@ function escolherHorario(horario,botao,horarioId){
  document.getElementById("formAgendamento").scrollIntoView({behavior:"smooth"});
 }
 
-function confirmarAgendamento(){
+async function confirmarAgendamento(){
  const nome=document.getElementById("nomeCliente").value.trim();
  const telefone=document.getElementById("telefoneCliente").value.trim();
+ const botao=document.querySelector("#formAgendamento .btn-confirmar");
 
  if(!nome || !telefone){
    alert("Informe seu nome e telefone.");
+   return;
+ }
+
+ if(!horarioIdEscolhido || !estabelecimentoIds[estabelecimento]){
+   alert("Escolha novamente o dia e o horário.");
+   return;
+ }
+
+ botao.disabled=true;
+ botao.textContent="Confirmando...";
+
+ const {data,error}=await supabaseClient.rpc("confirmar_agendamento",{
+   p_estabelecimento_id: estabelecimentoIds[estabelecimento],
+   p_horario_id: horarioIdEscolhido,
+   p_cliente_nome: nome,
+   p_cliente_telefone: telefone
+ });
+
+ botao.disabled=false;
+ botao.textContent="✓ Confirmar agendamento";
+
+ if(error){
+   console.error(error);
+   alert(error.message.includes("indisponivel")
+     ? "Este horário acabou de ser reservado. Escolha outro horário."
+     : "Não foi possível concluir o agendamento.");
    return;
  }
 
@@ -372,9 +399,13 @@ function confirmarAgendamento(){
 
  document.getElementById("sucesso").style.display="block";
  document.getElementById("formAgendamento").style.display="none";
+
+ document.querySelectorAll(".horario").forEach(b=>{
+   if(b.classList.contains("selecionado")) b.remove();
+ });
+
  document.getElementById("sucesso").scrollIntoView({behavior:"smooth"});
 }
-
 function abrirLogin(){
  document.getElementById("modalLogin").style.display="flex";
 }
